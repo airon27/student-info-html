@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Information</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="register-photo">
+        <div class="form-container">
+            <div class="image-holder">
+                <table class="table table-hover m-3 border">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Full Name</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Course</th>
+                        <th scope="col">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="studapi">
+
+                    </tbody>
+                  </table>
+            </div>
+            <form method="post">
+                <h2 class="text-center"><strong>Student Form</strong></h2>
+                <div class="form-group"><input class="form-control" type="text" name="studno" id="studno" placeholder="Student No" readonly></div>
+                <div class="form-group"><input class="form-control" type="text" name="name" id="name" placeholder="Full Name" autofocus required></div>
+                <div class="form-group"><input class="form-control" type="text" name="address" id="address" placeholder="Address" required></div>
+                <div class="form-group"><input class="form-control" type="text" name="course" id="course" placeholder="Course" required></div>
+                <div class="form-group"><button class="btn btn-primary btn-block" onclick="add_student()" type="submit">Add Student</button></div>
+                <div class="form-group"><button class="btn btn-primary btn-block" type="reset">Clear</button></div>
+                <hr>
+                <br>
+                <div class="form-group"><button class="btn btn-warning btn-block" type="submit" onclick="update_student()">Update</button></div>
+                <div class="form-group"><button class="btn btn-danger btn-block" type="submit" onclick="delete_student()">Delete</button></div>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $.ajax({
+                url: "http://localhost/student-info-api/",
+                method: "GET", 
+                success: function(response) {
+                    txt = "";
+                    for(var item of response){
+                        txt += 
+                        `
+                        <tr>
+                            <th scope="row">${item.id}</th>
+                            <td>${item.name}</td>
+                            <td>${item.address}</td>
+                            <td>${item.course}</td>
+                            <td>
+                              <button class="btn btn-outline-dark btn-sm" onclick="select_record(${item.id})">Select</button>
+                            </td>
+                        </tr>
+                        
+                        `;
+                        document.getElementById("studapi").innerHTML = txt;
+                    }
+                },
+                error: function(xhr, status, error) {
+                    var err = eval("(" + xhr.responseText + ")");                    
+                    alert(err.Message);
+                }
+            })
+        });
+  
+        function add_student() {
+              var data = {
+                  name : document.getElementById("name").value,
+                  address : document.getElementById("address").value,
+                  course : document.getElementById("course").value,
+              }
+              $(document).ready(function() {
+                    $.ajax({
+                        url: "http://localhost/student-info-api/",
+                        method: "POST",
+                        data: JSON.stringify(data),
+                        success: function(response) {
+                            console.log(response)
+                        },
+                        error: function(xhr, status, error) {
+                            var err = eval("(" + xhr.responseText + ")");                    
+                            console.log(err.Message);
+                        }
+                    });
+                  })
+          }
+          
+        function select_record(id) {
+              $.ajax({
+                  url: `http://localhost/student-info-api/index.php?id=${id}`,
+                  method: "GET",
+                  success: function(response) {
+                    for(var item of response){
+                      document.getElementById("studno").value = item.id;
+                      document.getElementById("name").value = item.name;
+                      document.getElementById("address").value = item.address;
+                      document.getElementById("course").value = item.course;
+                    }
+                  },
+                  error: function(xhr, status, error) {
+                      var err = eval("(" + xhr.responseText + ")");                    
+                      console.log(err.Message);
+                  }
+              });
+          }
+  
+          function update_student(){
+            var studno = document.getElementById("studno").value
+            var data = {
+                  name : document.getElementById("name").value,
+                  address : document.getElementById("address").value,
+                  course : document.getElementById("course").value,
+            }
+            $.ajax({
+                url: `http://localhost/student-info-api/index.php?id=${studno}`,
+                method: "PUT",
+                data: JSON.stringify(data),
+                success: function(response) {
+                    console.log(response)
+
+                },
+                error: function(xhr, status, error) {
+                    var err = eval("(" + xhr.responseText + ")");                    
+                    console.log(err.Message);
+                }
+            });
+        }
+  
+          function delete_student() {
+              var studno = document.getElementById("studno").value
+              $(document).ready(function() {
+                    $.ajax({
+                        url: `http://localhost/student-info-api/index.php?id=${studno}`,
+                        method: "DELETE",
+                        success: function(response) {
+                            console.log(response)
+                        },
+                        error: function(xhr, status, error) {
+                            var err = eval("(" + xhr.responseText + ")");                    
+                            console.log(err.Message);
+                        }
+                    });
+                  })
+          }
+      </script>
+</body>
+
+</html>
